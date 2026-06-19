@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\AcceptInvitationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,5 +28,15 @@ Route::middleware('auth')->group(function () {
         'store',
     ])->name('invitations.store');
 });
+
+Route::get(
+    '/accept-invitation/{token}',
+    [AcceptInvitationController::class, 'show']
+)->name('invitations.accept');
+
+Route::post(
+    '/accept-invitation/{token}',
+    [AcceptInvitationController::class, 'store']
+)->name('invitations.accept.store');
 
 require __DIR__.'/auth.php';

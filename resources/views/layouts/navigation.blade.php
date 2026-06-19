@@ -15,12 +15,15 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if(auth()->user()->can('invite-admin') ||
+                    auth()->user()->can('invite-member'))
                     <x-nav-link
                         :href="route('invitations.create')"
                         :active="request()->routeIs('invitations.*')"
                     >
                         Invitations
                     </x-nav-link>
+                    @endif
                 </div>
             </div>
 

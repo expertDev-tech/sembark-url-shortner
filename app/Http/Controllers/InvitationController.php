@@ -15,6 +15,8 @@ class InvitationController extends Controller
     
     public function create()
     {
+        $this->authorize('create', Invitation::class);
+
         return view('invitations.create');
     }
 
