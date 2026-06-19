@@ -16,6 +16,14 @@ class Invitation extends Model
         'accepted_at',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'expires_at' => 'datetime',
+            'accepted_at' => 'datetime',
+        ];
+    }
+
     public function company()
     {
         return $this->belongsTo(Company::class);
