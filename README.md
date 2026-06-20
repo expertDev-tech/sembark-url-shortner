@@ -1,282 +1,159 @@
-# Sembark URL Shortener
+# URL Shortener
 
-A multi-tenant URL shortening application built with Laravel 12.
-
-The application implements a role-based access control (RBAC) system where users belong to companies and can manage invitations and short URLs according to their assigned permissions.
-
----
+A multi-tenant URL Shortener built with Laravel 12.
 
 ## Features
 
 ### Authentication
 
-* Login using Laravel Breeze
-* Secure password hashing
-* Session-based authentication
+- Laravel Breeze Authentication
+- Login
+- Logout
 
-### Role-Based Access Control (RBAC)
+### Roles
 
-Implemented using Spatie Laravel Permission.
+- SuperAdmin
+- Admin
+- Member
 
-Roles:
+Implemented using:
 
-* SuperAdmin
-* Admin
-* Member
-
-Permissions are assigned to roles instead of hardcoding authorization logic.
+- Spatie Laravel Permission
+- Laravel Policies
 
 ---
 
-## User Roles
+## Multi-Tenant Architecture
 
-### SuperAdmin
+Each Company contains:
 
-Can:
+- Multiple Users
+- Multiple Short URLs
 
-* Invite Admin users
-* View all short URLs across all companies
-
-Cannot:
-
-* Create short URLs
-
-### Admin
-
-Can:
-
-* Invite Admin users
-* Invite Member users
-* Create short URLs
-* View all short URLs within their company
-
-Cannot:
-
-* View URLs belonging to other companies
-
-### Member
-
-Can:
-
-* Create short URLs
-* View only URLs created by themselves
-
-Cannot:
-
-* Send invitations
-* View URLs created by other users
+Users belong to exactly one company.
 
 ---
 
 ## Invitation Workflow
 
-The application uses an invitation-based onboarding process.
+### SuperAdmin
 
-### SuperAdmin → Admin
+Can:
 
-1. SuperAdmin creates an invitation.
-2. A company is created.
-3. Invitation record is created.
-4. Invitation email is generated.
+- Invite Admin to a new company
 
-### Admin → Admin / Member
+### Admin
 
-1. Admin creates an invitation.
-2. Invitation is linked to Admin's company.
-3. Invitation email is generated.
+Can:
 
-### Accepting Invitations
+- Invite Admin in own company
+- Invite Member in own company
 
-1. User opens invitation link.
-2. User enters:
+### Member
 
-   * Name
-   * Password
-   * Password Confirmation
-3. User account is created.
-4. Company is assigned automatically.
-5. Role is assigned automatically.
-6. Invitation is marked as accepted.
-7. User is logged in automatically.
+Cannot:
+
+- Send invitations
 
 ---
 
-## Invitation Security
+## URL Shortener
 
-* UUID-based invitation tokens
-* Expiring invitations
-* Accepted invitations cannot be reused
-* Authorization enforced through Policies
-* Members cannot access invitation endpoints
+### Admin
 
----
+Can:
 
-## Email Testing
+- Create short URLs
+- View all short URLs in own company
 
-For local development, invitation emails are written to logs.
+### Member
 
-### Environment Configuration
+Can:
 
-```env
-MAIL_MAILER=log
-```
+- Create short URLs
+- View only URLs created by themselves
 
-### Email Location
+### SuperAdmin
 
-```text
-storage/logs/laravel.log
-```
+Can:
 
-### Testing Invitations
-
-1. Create an invitation.
-2. Open:
-
-```text
-storage/logs/laravel.log
-```
-
-3. Copy the invitation URL.
-4. Open the URL in the browser.
-5. Complete the registration process.
+- View all short URLs
+- Cannot create short URLs
 
 ---
 
-## Architecture
-
-The application follows a layered architecture.
-
-### Controllers
-
-Handle:
-
-* HTTP requests
-* Authorization
-* Responses
-
-### Form Requests
-
-Handle:
-
-* Validation
-* Request authorization
-
-Examples:
-
-* StoreInvitationRequest
-* AcceptInvitationRequest
-
-### Policies
-
-Handle authorization rules.
+## Public Redirect
 
 Example:
 
-* InvitationPolicy
+http://127.0.0.1:8000/s/AbCd12
 
-### Services
+Redirects to:
 
-Contain business logic.
+https://google.com
 
-Example:
-
-* InvitationService
-
-### Models
-
-* User
-* Company
-* Invitation
-* ShortUrl
+Every redirect increments the hit counter.
 
 ---
 
-## Database Structure
+## Design Decisions
 
-### companies
+### Authorization
 
-| Column     |
-| ---------- |
-| id         |
-| name       |
-| created_at |
-| updated_at |
+Authorization is handled through:
 
-### users
+- Laravel Policies
+- Spatie Permissions
 
-| Column     |
-| ---------- |
-| id         |
-| company_id |
-| name       |
-| email      |
-| password   |
-| created_at |
-| updated_at |
+No role checks are hardcoded in controllers.
 
-### invitations
+### Service Layer
 
-| Column      |
-| ----------- |
-| id          |
-| company_id  |
-| invited_by  |
-| email       |
-| role        |
-| token       |
-| expires_at  |
-| accepted_at |
-| created_at  |
-| updated_at  |
+Business logic is extracted into:
 
----
+- InvitationService
+- ShortUrlService
 
-## Tech Stack
+Controllers remain thin and focused on HTTP concerns.
 
-* PHP 8.2
-* Laravel 12
-* MySQL
-* Laravel Breeze
-* Spatie Laravel Permission
-* Blade
-* Tailwind CSS
+### Multi-Tenant Isolation
+
+Data visibility is enforced by role:
+
+- SuperAdmin → All URLs
+- Admin → Company URLs
+- Member → Own URLs
 
 ---
 
 ## Installation
 
-Clone repository:
+Clone repository
 
 ```bash
 git clone <repository-url>
 ```
 
-Move into project:
-
-```bash
-cd sembark-url-shortener
-```
-
-Install dependencies:
+Install dependencies
 
 ```bash
 composer install
 npm install
 ```
 
-Create environment file:
+Create environment file
 
 ```bash
 cp .env.example .env
 ```
 
-Generate application key:
+Generate application key
 
 ```bash
 php artisan key:generate
 ```
 
-Configure MySQL database inside:
+Configure database
 
 ```env
 DB_CONNECTION=mysql
@@ -285,65 +162,68 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Run migrations:
+Run migrations
 
 ```bash
 php artisan migrate
 ```
 
-Seed roles and SuperAdmin:
+Run seeders
 
 ```bash
 php artisan db:seed
 ```
 
-Install frontend assets:
-
-```bash
-npm run build
-```
-
-Start application:
+Start application
 
 ```bash
 php artisan serve
+npm run dev
 ```
 
 ---
 
-## Default SuperAdmin Account
+## SuperAdmin Credentials
+
+Email:
 
 ```text
-Email: superadmin@sembark.com
-Password: password
+superadmin@sembark.com
+```
+
+Password:
+
+```text
+password
 ```
 
 ---
 
-## Authorization Strategy
+## Mail Testing
 
-Authorization is implemented using:
+Application uses:
 
-* Laravel Policies
-* Spatie Permissions
+```env
+MAIL_MAILER=log
+```
 
-This approach was chosen to avoid role checks inside controllers and keep authorization logic centralized and maintainable.
+Invitation emails are written to:
 
----
+```text
+storage/logs/laravel.log
+```
 
-## Future Enhancements
-
-* URL shortening module
-* URL analytics
-* Click tracking
-* Queued emails
-* Audit logs
-* Company management dashboard
+Copy the invitation URL from the log and open it in the browser.
 
 ---
 
-## Author
+## AI Usage Disclosure
 
-Ankit Parmar
+AI tools were used for:
 
-Senior PHP Full Stack Developer
+- Laravel syntax lookup
+- Validation examples
+- Architectural discussions
+- Debugging assistance
+
+All requirements interpretation, implementation decisions, debugging, testing, and final code verification were performed manually.
