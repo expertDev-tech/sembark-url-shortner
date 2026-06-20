@@ -8,6 +8,8 @@ use App\Models\Invitation;
 use App\Services\InvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InvitationMail;
 
 class InvitationController extends Controller
 {
@@ -24,10 +26,13 @@ class InvitationController extends Controller
 
         $this->authorize('create', Invitation::class);
 
-        $invitationService->create(
+        $invitation = $invitationService->create(
             auth()->user(),
             $request->validated()
         );
+
+        Mail::to($invitation->email)
+        ->send(new InvitationMail($invitation));
 
         return redirect()
             ->route('invitations.create')

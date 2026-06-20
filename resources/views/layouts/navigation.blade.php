@@ -12,9 +12,11 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
                     @if(auth()->user()->can('invite-admin') ||
                     auth()->user()->can('invite-member'))
                     <x-nav-link
@@ -23,6 +25,28 @@
                     >
                         Invitations
                     </x-nav-link>
+                    @endif
+
+                    @if(auth()->user()->can('create-short-url'))
+                        <x-nav-link
+                            :href="route('short-urls.create')"
+                            :active="request()->routeIs('short-urls.*')"
+                        >
+                            Create Short URL
+                        </x-nav-link>
+                    @endif
+
+                    @if(
+                        auth()->user()->can('view-all-short-urls') ||
+                        auth()->user()->can('view-company-short-urls') ||
+                        auth()->user()->can('view-own-short-urls')
+                    )
+                        <x-nav-link
+                            :href="route('short-urls.index')"
+                            :active="request()->routeIs('short-urls.index')"
+                        >
+                            Short URLs
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
